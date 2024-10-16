@@ -14,7 +14,7 @@ self.onmessage = (e) => {
     const game = new jsChessEngine.Game()
     const initialGame = game.exportJson();
     console.log(initialGame)
-    const result = aiMove(initialGame, 3)
+    const result = aiMove(initialGame, 1)
 
     return postMessage({result});
   } catch (error) {

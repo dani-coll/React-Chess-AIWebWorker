@@ -37,8 +37,6 @@ function App() {
     startProcessing,
   } = useWebWorker<any, any>(workerInstance);
 
-
-
   console.log(result);
 
   const start = () => {

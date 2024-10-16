@@ -1,25 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { Howl } from "howler";
+import { useRef, useState } from "react";
 import { initialBoard } from "../../Constants";
 import { Piece, Position } from "../../models";
 import { Board } from "../../models/Board";
 import { Pawn } from "../../models/Pawn";
 import {
   bishopMove,
-  getPossibleBishopMoves,
-  getPossibleKingMoves,
-  getPossibleKnightMoves,
-  getPossiblePawnMoves,
-  getPossibleQueenMoves,
-  getPossibleRookMoves,
   kingMove,
   knightMove,
   pawnMove,
   queenMove,
-  rookMove,
+  rookMove
 } from "../../referee/rules";
 import { PieceType, TeamType } from "../../Types";
 import Chessboard from "../Chessboard/Chessboard";
-import { Howl } from "howler";
+const jsChessEngine = require('js-chess-engine')
 
 const moveSound = new Howl({
   src: ["/sounds/move-self.mp3"],
@@ -32,6 +27,39 @@ const captureSound = new Howl({
 const checkmateSound = new Howl({
   src: ["/sounds/move-check.mp3"],
 });
+
+function getPositionLetter(x: number): string {
+  return String.fromCharCode(x + 65);
+}
+
+function getPieceLetter(piece: Piece): string {
+  let letter = "p";
+  if(piece.isKing) letter = 'k';
+  if(piece.isQueen) letter = 'q';
+  if(piece.isRook) letter = 'r';
+  if(piece.isBishop) letter = 'b';
+  if(piece.isKnight) letter = 'n';
+
+  return piece.team === TeamType.OUR ? letter.toUpperCase(): letter;
+}
+
+function parseBoardToChessEngine(board: Board) {
+  const pieces = board.pieces.reduce((previousValue, currentPiece) => {
+    return {
+      ...previousValue,
+      [getPositionLetter(currentPiece.position.x) + (currentPiece.position.y+1)]: getPieceLetter(currentPiece)
+    }
+  }, {})
+  const chessEngineBoard = {
+    turn: board.totalTurns % 2 === 1 ? 'white' : 'black',
+    pieces
+  }
+
+  const { moves, aiMove } = jsChessEngine;
+  const newMoves = moves(chessEngineBoard);
+  const result = aiMove({...chessEngineBoard, moves: newMoves}, 3)
+  console.log("Best move:", result)
+}
 
 export default function Referee() {
   const [board, setBoard] = useState<Board>(initialBoard.clone());
@@ -231,8 +259,13 @@ export default function Referee() {
     setBoard(initialBoard.clone());
   }
 
+  function calculateBestMove() {
+    parseBoardToChessEngine(board);
+  }
+
   return (
     <>
+      <button onClick={calculateBestMove}>Calculate best move</button>
       <p style={{ color: "white", fontSize: "24px", textAlign: "center" }}>
         Total turns: {board.totalTurns}
       </p>
