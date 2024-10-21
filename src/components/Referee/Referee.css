@@ -1,0 +1,38 @@
+.best-move-container {
+    display: flex;
+    margin-left: 40px;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.best-move-button {
+    background: white;
+    flex: 1;
+    padding: 10px 0;
+    margin: 20px;
+    border-radius: 10px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.5),
+                0px 2px 4px rgba(255, 255, 255, 0.5);
+    color: white;
+    font-weight: bold;
+
+    &:active {
+        opacity: 0.5;
+    }
+    
+    &.main-thread {
+        background: #AA2200;
+    }
+
+    &.web-worker {
+        background: #00AAAA;
+    }
+}
+
+.best-move {
+    margin: 20px;
+    text-align:center;
+}

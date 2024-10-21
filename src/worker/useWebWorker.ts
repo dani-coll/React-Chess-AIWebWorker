@@ -1,29 +1,28 @@
 import { useCallback, useEffect, useState } from "react";
 
-export interface IBaseWorkerResponse<T> {
-  result: T;
-  error?: any;
-}
 
-export const useWebWorker = <TResult, TWorkerPayload>(worker: Worker) => {
+export const useWebWorker = (worker: Worker) => {
   const [running, setRunning] = useState(false);
-  const [error, setError] = useState<any>();
-  const [result, setResult] = useState<TResult>();
+  const [result, setResult] = useState<string>();
 
   const startProcessing = useCallback(
-    (data: TWorkerPayload) => {
+    (data: any) => {
       setRunning(true);
+      setResult('')
       worker.postMessage(data);
     },
     [worker]
   );
 
+  const clear = () => {
+    setResult('');
+    setRunning(false);
+  }
+
   useEffect(() => {
-    const onMessage = (event: MessageEvent<IBaseWorkerResponse<TResult>>) => {
-      console.log(event);
+    const onMessage = (event: MessageEvent<string>) => {
       setRunning(false);
-      setError(event.data.error);
-      setResult(event.data.result);
+      setResult(event.data);
     };
     worker.addEventListener("message", onMessage);
     return () => worker.removeEventListener("message", onMessage);
@@ -32,7 +31,7 @@ export const useWebWorker = <TResult, TWorkerPayload>(worker: Worker) => {
   return {
     startProcessing,
     running,
-    error,
     result,
+    clear
   };
 };

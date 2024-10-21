@@ -4,7 +4,7 @@ Welcome to the React Chess Game repository! This chess game is a modern, respons
 
 It also offers an engine to calculate the best possible move
 
-![React Chess Game Preview](https://i.imgur.com/9aAIZKX.png)
+![React Chess Game Preview](demo-example.png)
 
 ## Getting Started
 

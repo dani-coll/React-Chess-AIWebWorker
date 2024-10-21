@@ -13,8 +13,11 @@ import {
   rookMove
 } from "../../referee/rules";
 import { PieceType, TeamType } from "../../Types";
+import { parseBestMoveToString, parseBoardToChessEngine } from "../../utils/utils";
 import { useWebWorker } from "../../worker/useWebWorker";
 import Chessboard from "../Chessboard/Chessboard";
+import "./Referee.css";
+
 const jsChessEngine = require('js-chess-engine')
 
 const moveSound = new Howl({
@@ -29,51 +32,21 @@ const checkmateSound = new Howl({
   src: ["/sounds/move-check.mp3"],
 });
 
-function getPositionLetter(x: number): string {
-  return String.fromCharCode(x + 65);
-}
-
-function getPieceLetter(piece: Piece): string {
-  let letter = "p";
-  if(piece.isKing) letter = 'k';
-  if(piece.isQueen) letter = 'q';
-  if(piece.isRook) letter = 'r';
-  if(piece.isBishop) letter = 'b';
-  if(piece.isKnight) letter = 'n';
-
-  return piece.team === TeamType.OUR ? letter.toUpperCase(): letter;
-}
-
-function parseBoardToChessEngine(board: Board) {
-  const pieces = board.pieces.reduce((previousValue, currentPiece) => {
-    return {
-      ...previousValue,
-      [getPositionLetter(currentPiece.position.x) + (currentPiece.position.y+1)]: getPieceLetter(currentPiece)
-    }
-  }, {})
-  const chessEngineBoard = {
-    turn: board.totalTurns % 2 === 1 ? 'white' : 'black',
-    pieces
-  }
-
-  return chessEngineBoard;
-}
-
 export default function Referee() {
   const [board, setBoard] = useState<Board>(initialBoard.clone());
   const [promotionPawn, setPromotionPawn] = useState<Piece>();
   const modalRef = useRef<HTMLDivElement>(null);
   const checkmateModalRef = useRef<HTMLDivElement>(null);
   const workerInstance = useMemo(() => new Worker(new URL('../../worker/chess-engine-worker', import.meta.url)), []);
+  const [bestMove, setBestMove] = useState('')
 
   const {
     running,
-    error,
     result,
+    clear,
     startProcessing,
-  } = useWebWorker<any, any>(workerInstance);
+  } = useWebWorker(workerInstance);
 
-  console.log(result);
 
   function playMove(playedPiece: Piece, destination: Position): boolean {
     // If the playing piece doesn't have any moves return
@@ -124,6 +97,9 @@ export default function Referee() {
 
       return clonedBoard;
     });
+
+    setBestMove('');
+    clear();
 
     // This is for promoting a pawn
     let promotionRow = playedPiece.team === TeamType.OUR ? 7 : 0;
@@ -270,27 +246,27 @@ export default function Referee() {
   function processMainThread(board: any) {
     const { moves, aiMove } = jsChessEngine;
     const newMoves = moves(board);
-    const result = aiMove({...board, moves: newMoves}, 2)
-    console.log("Best move:", result)
+    return aiMove({...board, moves: newMoves}, 2)
   }
 
   function calculateBestMoveMainThread() {
     const chessEngineBoard = parseBoardToChessEngine(board);
-    processMainThread(chessEngineBoard)
+    const bestMove = processMainThread(chessEngineBoard)
+    setBestMove(parseBestMoveToString(bestMove));
   }
 
   function calculateBestMoveWebWorker() {
-    const chessEngineBoard = parseBoardToChessEngine(board);
-    startProcessing(chessEngineBoard)
+    startProcessing(parseBoardToChessEngine(board))
   }
+
 
   return (
     <>
-      <button onClick={calculateBestMoveMainThread}>Best move (Main thread)</button>
-      <button onClick={calculateBestMoveWebWorker}>Best move (Web worker)</button>
-      <p style={{ color: "white", fontSize: "24px", textAlign: "center" }}>
-        Total turns: {board.totalTurns}
-      </p>
+    <div className="best-move-container">
+      <button className="best-move-button main-thread" onClick={calculateBestMoveMainThread}>Calculate (Main thread)</button>
+      <div className="best-move">Best move: <div><b>{result || bestMove}</b></div></div>
+      <button className="best-move-button web-worker" onClick={calculateBestMoveWebWorker}>Calculate (Web Worker)</button>
+    </div>
       <div className="modal hidden" ref={modalRef}>
         <div className="modal-body">
           <img
