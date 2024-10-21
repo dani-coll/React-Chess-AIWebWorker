@@ -1,12 +1,12 @@
 import { useRef, useState } from "react";
-import "./Chessboard.css";
-import Tile from "../Tile/Tile";
 import {
-  VERTICAL_AXIS,
-  HORIZONTAL_AXIS,
   GRID_SIZE,
+  HORIZONTAL_AXIS,
+  VERTICAL_AXIS,
 } from "../../Constants";
 import { Piece, Position } from "../../models";
+import Tile from "../Tile/Tile";
+import "./Chessboard.css";
 
 interface Props {
   playMove: (piece: Piece, position: Position) => boolean;
@@ -121,16 +121,32 @@ export default function Chessboard({playMove, pieces} : Props) {
     }
   }
 
+  const letters: string[] = [];
+  const numbers: number[] = [];
+
+  for(let i = 0; i < 8; ++i) {
+    letters.push(String.fromCharCode(65 + i));
+    numbers.push(8 - i);
+  }
+
   return (
     <>
-      <div
-        onMouseMove={(e) => movePiece(e)}
-        onMouseDown={(e) => grabPiece(e)}
-        onMouseUp={(e) => dropPiece(e)}
-        id="chessboard"
-        ref={chessboardRef}
-      >
-        {board}
+      <div className="chessboard-with-numbers">
+        <div className="numbers-axis">
+          {numbers.map(number => <div className="number-container" key={number}><div>{number}</div></div>)}
+        </div>
+        <div
+          onMouseMove={(e) => movePiece(e)}
+          onMouseDown={(e) => grabPiece(e)}
+          onMouseUp={(e) => dropPiece(e)}
+          id="chessboard"
+          ref={chessboardRef}
+        >
+          {board}
+        </div>
+      </div>
+      <div className="letters-axis">
+        {letters.map(letter => <div className="letter" key={letter}>{letter}</div>)}
       </div>
     </>
   );

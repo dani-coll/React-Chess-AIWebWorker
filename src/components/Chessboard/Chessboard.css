@@ -64,3 +64,36 @@
 .modal > .modal-body > .checkmate-body > button:hover {
   cursor: pointer;
 }
+
+.chessboard-with-numbers {
+  display: flex;
+}
+
+.letters-axis, .numbers-axis {
+  display: flex;
+  text-align: center;
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  justify-content: center;
+}
+
+.letters-axis {
+  margin-left: 41px;
+  padding-top: 10px;
+}
+
+.numbers-axis{
+  flex-direction: column;
+}
+
+.number-container {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  margin-right: 20px;
+}
+
+.letter {
+  flex: 1;
+}

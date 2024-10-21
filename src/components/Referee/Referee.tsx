@@ -1,5 +1,5 @@
 import { Howl } from "howler";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { initialBoard } from "../../Constants";
 import { Piece, Position } from "../../models";
 import { Board } from "../../models/Board";
@@ -13,6 +13,7 @@ import {
   rookMove
 } from "../../referee/rules";
 import { PieceType, TeamType } from "../../Types";
+import { useWebWorker } from "../../worker/useWebWorker";
 import Chessboard from "../Chessboard/Chessboard";
 const jsChessEngine = require('js-chess-engine')
 
@@ -55,10 +56,7 @@ function parseBoardToChessEngine(board: Board) {
     pieces
   }
 
-  const { moves, aiMove } = jsChessEngine;
-  const newMoves = moves(chessEngineBoard);
-  const result = aiMove({...chessEngineBoard, moves: newMoves}, 3)
-  console.log("Best move:", result)
+  return chessEngineBoard;
 }
 
 export default function Referee() {
@@ -66,6 +64,16 @@ export default function Referee() {
   const [promotionPawn, setPromotionPawn] = useState<Piece>();
   const modalRef = useRef<HTMLDivElement>(null);
   const checkmateModalRef = useRef<HTMLDivElement>(null);
+  const workerInstance = useMemo(() => new Worker(new URL('../../worker/chess-engine-worker', import.meta.url)), []);
+
+  const {
+    running,
+    error,
+    result,
+    startProcessing,
+  } = useWebWorker<any, any>(workerInstance);
+
+  console.log(result);
 
   function playMove(playedPiece: Piece, destination: Position): boolean {
     // If the playing piece doesn't have any moves return
@@ -259,13 +267,27 @@ export default function Referee() {
     setBoard(initialBoard.clone());
   }
 
-  function calculateBestMove() {
-    parseBoardToChessEngine(board);
+  function processMainThread(board: any) {
+    const { moves, aiMove } = jsChessEngine;
+    const newMoves = moves(board);
+    const result = aiMove({...board, moves: newMoves}, 2)
+    console.log("Best move:", result)
+  }
+
+  function calculateBestMoveMainThread() {
+    const chessEngineBoard = parseBoardToChessEngine(board);
+    processMainThread(chessEngineBoard)
+  }
+
+  function calculateBestMoveWebWorker() {
+    const chessEngineBoard = parseBoardToChessEngine(board);
+    startProcessing(chessEngineBoard)
   }
 
   return (
     <>
-      <button onClick={calculateBestMove}>Calculate best move</button>
+      <button onClick={calculateBestMoveMainThread}>Best move (Main thread)</button>
+      <button onClick={calculateBestMoveWebWorker}>Best move (Web worker)</button>
       <p style={{ color: "white", fontSize: "24px", textAlign: "center" }}>
         Total turns: {board.totalTurns}
       </p>
