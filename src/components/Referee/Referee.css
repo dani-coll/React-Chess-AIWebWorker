@@ -24,11 +24,11 @@
         opacity: 0.5;
     }
 
-    &.main-thread {
+    &:nth-of-type(1) {
         background: #AA2200;
     }
 
-    &.web-worker {
+    &:nth-of-type(2) {
         background: #00AAAA;
     }
 }

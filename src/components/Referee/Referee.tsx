@@ -1,23 +1,16 @@
 import { Howl } from "howler";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { initialBoard } from "../../Constants";
 import { Piece, Position } from "../../models";
 import { Board } from "../../models/Board";
 import { Pawn } from "../../models/Pawn";
 import { PieceType, TeamType } from "../../Types";
 import { calculateBestMove, parseBoardToChessEngine as parseUIBoardToChessEngine } from "../../utils/utils";
-import { useWebWorker } from "../../worker/useWebWorker";
 import Chessboard from "../Chessboard/Chessboard";
 import "./Referee.css";
 
-const jsChessEngine = require('js-chess-engine')
-
 const moveSound = new Howl({
   src: ["/sounds/move-self.mp3"],
-});
-
-const captureSound = new Howl({
-  src: ["/sounds/capture.mp3"],
 });
 
 const checkmateSound = new Howl({
@@ -29,17 +22,8 @@ export default function Referee() {
   const [promotionPawn, setPromotionPawn] = useState<Piece>();
   const modalRef = useRef<HTMLDivElement>(null);
   const checkmateModalRef = useRef<HTMLDivElement>(null);
-  const workerInstance = useMemo(() => new Worker(new URL('../../worker/chess-engine-worker', import.meta.url)), []);
   const [bestMove, setBestMove] = useState('')
   const [loading, setLoading] = useState(false)
-
-  const {
-    running,
-    result,
-    clear,
-    startProcessing,
-  } = useWebWorker(workerInstance);
-
 
   function playMove(playedPiece: Piece, destination: Position): boolean {
     // If the playing piece doesn't have any moves return
@@ -92,14 +76,13 @@ export default function Referee() {
     });
 
     setBestMove('');
-    clear();
 
     // This is for promoting a pawn
     let promotionRow = playedPiece.team === TeamType.OUR ? 7 : 0;
 
     if (destination.y === promotionRow && playedPiece.isPawn) {
       modalRef.current?.classList.remove("hidden");
-      setPromotionPawn((previousPromotionPawn) => {
+      setPromotionPawn((_) => {
         const clonedPlayedPiece = playedPiece.clone();
         clonedPlayedPiece.position = destination.clone();
         return clonedPlayedPiece;
@@ -144,7 +127,7 @@ export default function Referee() {
       return;
     }
 
-    setBoard((previousBoard) => {
+    setBoard((_) => {
       const clonedBoard = board.clone();
       clonedBoard.pieces = clonedBoard.pieces.reduce((results, piece) => {
         if (piece.samePiecePosition(promotionPawn)) {
@@ -174,25 +157,21 @@ export default function Referee() {
     setBoard(initialBoard.clone());
   }
 
-  function calculateBestMoveMainThread() {
+  function startCalculation() {
     const chessEngineBoard = parseUIBoardToChessEngine(board);
     setLoading(true)
     setBestMove(calculateBestMove(chessEngineBoard));
     setLoading(false)
   }
 
-  function calculateBestMoveWebWorker() {
-    startProcessing(parseUIBoardToChessEngine(board))
-  }
-
   return (
     <>
       <div className="best-move-container">
-        <img className={`spinning-icon ${running || loading ? 'loading' : ''}`} src="/dynatrace.png" width="50"></img>
-        <button className="best-move-button main-thread" onClick={calculateBestMoveMainThread}>Calculate (Main thread)</button>
-        <div className="best-move">Best move: <div><b>{result || bestMove}</b></div></div>
-        <button className="best-move-button web-worker" onClick={calculateBestMoveWebWorker}>Calculate (Web Worker)</button>
+        <img className={`spinning-icon ${loading ? 'loading' : ''}`} src="/dynatrace.png" width="50"></img>
+        <button className="best-move-button" onClick={startCalculation}>Calculate best move</button>
+        <div className="best-move">Best move: <div><b>{bestMove}</b></div></div>
       </div>
+
       <div className="modal hidden" ref={modalRef}>
         <div className="modal-body">
           <img
@@ -213,6 +192,7 @@ export default function Referee() {
           />
         </div>
       </div>
+
       <div className="modal hidden" ref={checkmateModalRef}>
         <div className="modal-body">
           <div className="checkmate-body">
@@ -224,6 +204,8 @@ export default function Referee() {
           </div>
         </div>
       </div>
+
+
       <Chessboard playMove={playMove} pieces={board.pieces} />
     </>
   );

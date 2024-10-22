@@ -5,6 +5,8 @@ import { TeamType } from "../Types";
 const jsChessEngine = require('js-chess-engine')
 const { moves, aiMove } = jsChessEngine;
 
+const AI_LEVEL = 3;
+
 function getPositionLetter(x: number): string {
   return String.fromCharCode(x + 65);
 }
@@ -44,6 +46,6 @@ export function toString(bestMove: { [key: string]: string }) {
 
 export function calculateBestMove(board: ChessEngineBoard): string {
   const newMoves = moves(board);
-  const bestMove = aiMove({ ...board, moves: newMoves }, 3)
+  const bestMove = aiMove({ ...board, moves: newMoves }, AI_LEVEL)
   return toString(bestMove);
 }
