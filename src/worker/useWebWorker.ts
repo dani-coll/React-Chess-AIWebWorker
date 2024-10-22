@@ -14,10 +14,11 @@ export const useWebWorker = (worker: Worker) => {
     [worker]
   );
 
-  const clear = () => {
+  const clear = useCallback(() => {
     setResult('');
     setRunning(false);
   }
+    , []);
 
   useEffect(() => {
     const onMessage = (event: MessageEvent<string>) => {

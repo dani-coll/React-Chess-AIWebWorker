@@ -246,7 +246,7 @@ export default function Referee() {
   function processMainThread(board: any) {
     const { moves, aiMove } = jsChessEngine;
     const newMoves = moves(board);
-    return aiMove({...board, moves: newMoves}, 2)
+    return aiMove({ ...board, moves: newMoves }, 2)
   }
 
   function calculateBestMoveMainThread() {
@@ -262,11 +262,11 @@ export default function Referee() {
 
   return (
     <>
-    <div className="best-move-container">
-      <button className="best-move-button main-thread" onClick={calculateBestMoveMainThread}>Calculate (Main thread)</button>
-      <div className="best-move">Best move: <div><b>{result || bestMove}</b></div></div>
-      <button className="best-move-button web-worker" onClick={calculateBestMoveWebWorker}>Calculate (Web Worker)</button>
-    </div>
+      <div className="best-move-container">
+        <button className="best-move-button main-thread" onClick={calculateBestMoveMainThread}>Calculate (Main thread)</button>
+        <div className="best-move">Best move: <div><b>{result || bestMove}</b></div></div>
+        <button className="best-move-button web-worker" onClick={calculateBestMoveWebWorker}>Calculate (Web Worker)</button>
+      </div>
       <div className="modal hidden" ref={modalRef}>
         <div className="modal-body">
           <img
