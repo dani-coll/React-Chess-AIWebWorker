@@ -4,16 +4,8 @@ import { initialBoard } from "../../Constants";
 import { Piece, Position } from "../../models";
 import { Board } from "../../models/Board";
 import { Pawn } from "../../models/Pawn";
-import {
-  bishopMove,
-  kingMove,
-  knightMove,
-  pawnMove,
-  queenMove,
-  rookMove
-} from "../../referee/rules";
 import { PieceType, TeamType } from "../../Types";
-import { parseBestMoveToString, parseBoardToChessEngine } from "../../utils/utils";
+import { calculateBestMove, parseBoardToChessEngine as parseUIBoardToChessEngine } from "../../utils/utils";
 import { useWebWorker } from "../../worker/useWebWorker";
 import Chessboard from "../Chessboard/Chessboard";
 import "./Referee.css";
@@ -147,68 +139,6 @@ export default function Referee() {
     return false;
   }
 
-  //TODO
-  //Add stalemate!
-  function isValidMove(
-    initialPosition: Position,
-    desiredPosition: Position,
-    type: PieceType,
-    team: TeamType
-  ) {
-    let validMove = false;
-    switch (type) {
-      case PieceType.PAWN:
-        validMove = pawnMove(
-          initialPosition,
-          desiredPosition,
-          team,
-          board.pieces
-        );
-        break;
-      case PieceType.KNIGHT:
-        validMove = knightMove(
-          initialPosition,
-          desiredPosition,
-          team,
-          board.pieces
-        );
-        break;
-      case PieceType.BISHOP:
-        validMove = bishopMove(
-          initialPosition,
-          desiredPosition,
-          team,
-          board.pieces
-        );
-        break;
-      case PieceType.ROOK:
-        validMove = rookMove(
-          initialPosition,
-          desiredPosition,
-          team,
-          board.pieces
-        );
-        break;
-      case PieceType.QUEEN:
-        validMove = queenMove(
-          initialPosition,
-          desiredPosition,
-          team,
-          board.pieces
-        );
-        break;
-      case PieceType.KING:
-        validMove = kingMove(
-          initialPosition,
-          desiredPosition,
-          team,
-          board.pieces
-        );
-    }
-
-    return validMove;
-  }
-
   function promotePawn(pieceType: PieceType) {
     if (promotionPawn === undefined) {
       return;
@@ -244,22 +174,15 @@ export default function Referee() {
     setBoard(initialBoard.clone());
   }
 
-  function processMainThread(board: any) {
-    const { moves, aiMove } = jsChessEngine;
-    const newMoves = moves(board);
-    return aiMove({ ...board, moves: newMoves }, 3)
-  }
-
   function calculateBestMoveMainThread() {
-    const chessEngineBoard = parseBoardToChessEngine(board);
+    const chessEngineBoard = parseUIBoardToChessEngine(board);
     setLoading(true)
-    const bestMove = processMainThread(chessEngineBoard)
-    setBestMove(parseBestMoveToString(bestMove));
+    setBestMove(calculateBestMove(chessEngineBoard));
     setLoading(false)
   }
 
   function calculateBestMoveWebWorker() {
-    startProcessing(parseBoardToChessEngine(board))
+    startProcessing(parseUIBoardToChessEngine(board))
   }
 
   return (

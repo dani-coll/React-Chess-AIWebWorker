@@ -1,9 +1,5 @@
-import { parseBestMoveToString } from "../utils/utils";
-
-const { aiMove } = require('js-chess-engine');
+import { calculateBestMove } from "../utils/utils";
 
 self.onmessage = (event) => {
-  const result = aiMove(event.data, 3)
-
-  return postMessage(parseBestMoveToString(result));
+  return postMessage(calculateBestMove(event.data));
 };
