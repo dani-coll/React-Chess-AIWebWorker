@@ -13,7 +13,7 @@ interface Props {
   pieces: Piece[];
 }
 
-export default function Chessboard({playMove, pieces} : Props) {
+export default function Chessboard({ playMove, pieces }: Props) {
   const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
   const [grabPosition, setGrabPosition] = useState<Position>(new Position(-1, -1));
   const chessboardRef = useRef<HTMLDivElement>(null);
@@ -92,7 +92,7 @@ export default function Chessboard({playMove, pieces} : Props) {
       if (currentPiece) {
         var succes = playMove(currentPiece.clone(), new Position(x, y));
 
-        if(!succes) {
+        if (!succes) {
           //RESETS THE PIECE POSITION
           activePiece.style.position = "relative";
           activePiece.style.removeProperty("top");
@@ -114,8 +114,8 @@ export default function Chessboard({playMove, pieces} : Props) {
       let image = piece ? piece.image : undefined;
 
       let currentPiece = activePiece != null ? pieces.find(p => p.samePosition(grabPosition)) : undefined;
-      let highlight = currentPiece?.possibleMoves ? 
-      currentPiece.possibleMoves.some(p => p.samePosition(new Position(i, j))) : false;
+      let highlight = currentPiece?.possibleMoves ?
+        currentPiece.possibleMoves.some(p => p.samePosition(new Position(i, j))) : false;
 
       board.push(<Tile key={`${j},${i}`} image={image} number={number} highlight={highlight} />);
     }
@@ -124,7 +124,7 @@ export default function Chessboard({playMove, pieces} : Props) {
   const letters: string[] = [];
   const numbers: number[] = [];
 
-  for(let i = 0; i < 8; ++i) {
+  for (let i = 0; i < 8; ++i) {
     letters.push(String.fromCharCode(65 + i));
     numbers.push(8 - i);
   }

@@ -1,4 +1,5 @@
 .best-move-container {
+    position: relative;
     display: flex;
     margin-left: 40px;
     color: white;
@@ -35,4 +36,27 @@
 .best-move {
     margin: 20px;
     text-align: center;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinning-icon {
+    position: absolute;
+    left: -50px;
+    top: 20px;
+    animation-duration: 4000ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+
+    &.loading {
+        animation-name: spin;
+    }
 }
