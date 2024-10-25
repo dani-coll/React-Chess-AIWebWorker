@@ -167,10 +167,23 @@ export default function Referee() {
   return (
     <>
       <div className="best-move-container">
-        <img className={`spinning-icon ${loading ? 'loading' : ''}`} src="/dynatrace.png" width="50"></img>
-        <button className="best-move-button" onClick={startCalculation}>Calculate best move</button>
+        <img
+          className={`spinning-icon ${loading ? 'loading' : ''}`}
+          src="/dynatrace.png" width="50"
+        ></img>
+        <button
+          className="best-move-button"
+          onClick={startCalculation}>
+          Calculate best move
+        </button>
         <div className="best-move">Best move: <div><b>{bestMove}</b></div></div>
       </div>
+
+
+
+
+
+
 
       <div className="modal hidden" ref={modalRef}>
         <div className="modal-body">
