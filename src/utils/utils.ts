@@ -2,8 +2,13 @@ import { Piece } from "../models";
 import { Board } from "../models/Board";
 import { TeamType } from "../Types";
 
-const jsChessEngine = require('js-chess-engine')
+const jsChessEngine = await import('js-chess-engine')
 const { moves, aiMove } = jsChessEngine;
+
+export type ChessEngineParams = {
+    turn: string;
+    pieces: {};
+}
 
 function getPositionLetter(x: number): string {
   return String.fromCharCode(x + 65);

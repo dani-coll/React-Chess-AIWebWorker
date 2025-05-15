@@ -7,6 +7,7 @@ import {
 import { Piece, Position } from "../../models";
 import Tile from "../Tile/Tile";
 import "./Chessboard.css";
+import React from 'react';
 
 interface Props {
   playMove: (piece: Piece, position: Position) => boolean;

@@ -5,12 +5,12 @@ import { Piece, Position } from "../../models";
 import { Board } from "../../models/Board";
 import { Pawn } from "../../models/Pawn";
 import { PieceType, TeamType } from "../../Types";
-import { calculateBestMove, parseBoardToChessEngine as parseUIBoardToChessEngine } from "../../utils/utils";
+import { calculateBestMove, ChessEngineParams, parseBoardToChessEngine as parseUIBoardToChessEngine } from "../../utils/utils";
 import { useWebWorker } from "../../worker/useWebWorker";
 import Chessboard from "../Chessboard/Chessboard";
 import "./Referee.css";
 
-const jsChessEngine = require('js-chess-engine')
+import React from 'react';
 
 const moveSound = new Howl({
   src: ["/sounds/move-self.mp3"],
@@ -29,17 +29,16 @@ export default function Referee() {
   const [promotionPawn, setPromotionPawn] = useState<Piece>();
   const modalRef = useRef<HTMLDivElement>(null);
   const checkmateModalRef = useRef<HTMLDivElement>(null);
-  const workerInstance = useMemo(() => new Worker(new URL('../../worker/chess-engine-worker', import.meta.url)), []);
-  const [bestMove, setBestMove] = useState('')
+  const workerInstance = useMemo(() => new Worker(new URL('../../worker/chess-engine-worker', import.meta.url), { type: 'module'}), []);
+  const [mainThreadBestMove, setMainThreadBestMove] = useState('')
   const [loading, setLoading] = useState(false)
 
   const {
     running,
-    result,
+    result: workerBestMove,
     clear,
     startProcessing,
-  } = useWebWorker(workerInstance);
-
+  } = useWebWorker<string, ChessEngineParams>(workerInstance);
 
   function playMove(playedPiece: Piece, destination: Position): boolean {
     // If the playing piece doesn't have any moves return
@@ -91,7 +90,7 @@ export default function Referee() {
       return clonedBoard;
     });
 
-    setBestMove('');
+    setMainThreadBestMove('');
     clear();
 
     // This is for promoting a pawn
@@ -177,7 +176,7 @@ export default function Referee() {
   function calculateBestMoveMainThread() {
     const chessEngineBoard = parseUIBoardToChessEngine(board);
     setLoading(true)
-    setBestMove(calculateBestMove(chessEngineBoard));
+    setMainThreadBestMove(calculateBestMove(chessEngineBoard));
     setLoading(false)
   }
 
@@ -190,7 +189,7 @@ export default function Referee() {
       <div className="best-move-container">
         <img className={`spinning-icon ${running || loading ? 'loading' : ''}`} src="/dynatrace.png" width="50"></img>
         <button className="best-move-button main-thread" onClick={calculateBestMoveMainThread}>Calculate (Main thread)</button>
-        <div className="best-move">Best move: <div><b>{result || bestMove}</b></div></div>
+        <div className="best-move">Best move: <div><b>{workerBestMove || mainThreadBestMove}</b></div></div>
         <button className="best-move-button web-worker" onClick={calculateBestMoveWebWorker}>Calculate (Web Worker)</button>
       </div>
       <div className="modal hidden" ref={modalRef}>

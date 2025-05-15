@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 
-
 export interface WorkerResponse<T> {
   result: T;
 }
