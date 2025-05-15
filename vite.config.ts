@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import viteTsconfigPaths from 'vite-tsconfig-paths'
+import browserslistToEsbuild from 'browserslist-to-esbuild'
 
 export default defineConfig({
     // depending on your application, base can also be "/"
@@ -12,4 +13,11 @@ export default defineConfig({
         // this sets a default port to 3000  
         port: 3000, 
     },
+    build: {
+        target: browserslistToEsbuild([
+            '>0.2%',
+            'not dead',
+            'not op_mini all'
+        ]),
+    }
 })

@@ -16,36 +16,23 @@
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest",
       ".eslintrc.json"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
     ]
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@types/howler": "^2.2.12",
-    "typescript": "^5.8.3",
-    "@vitejs/plugin-react": "^4.4.1",
-    "vite": "^6.3.5",
-    "vite-tsconfig-paths": "^5.1.4",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
+    "@types/howler": "^2.2.12",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.18",
     "@types/react": "^19.1.4",
-    "@types/react-dom": "^19.1.5"
+    "@types/react-dom": "^19.1.5",
+    "@vitejs/plugin-react": "^4.4.1",
+    "browserslist-to-esbuild": "^2.1.1",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }
