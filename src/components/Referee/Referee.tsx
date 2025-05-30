@@ -5,12 +5,12 @@ import { Piece, Position } from "../../models";
 import { Board } from "../../models/Board";
 import { Pawn } from "../../models/Pawn";
 import { PieceType, TeamType } from "../../Types";
-import { calculateBestMove, ChessEngineParams, parseBoardToChessEngine as parseUIBoardToChessEngine } from "../../utils/utils";
-import { useWebWorker } from "../../worker/useWebWorker";
+import { calculateBestMove, parseBoardToChessEngine as parseUIBoardToChessEngine } from "../../utils/utils";
 import Chessboard from "../Chessboard/Chessboard";
 import "./Referee.css";
 
 import React from 'react';
+import { useChessEngineWorker } from "../../worker/useChessEngineWorker";
 
 const moveSound = new Howl({
   src: ["/sounds/move-self.mp3"],
@@ -29,16 +29,22 @@ export default function Referee() {
   const [promotionPawn, setPromotionPawn] = useState<Piece>();
   const modalRef = useRef<HTMLDivElement>(null);
   const checkmateModalRef = useRef<HTMLDivElement>(null);
-  const workerInstance = useMemo(() => new Worker(new URL('../../worker/chess-engine-worker', import.meta.url), { type: 'module'}), []);
   const [mainThreadBestMove, setMainThreadBestMove] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // Initialize worker
+  const workerInstance = useMemo(
+    () => new Worker(
+      new URL('../../worker/chess-engine-worker', import.meta.url), 
+      { type: 'module'}
+    ), []);
+
   const {
     running,
-    result: workerBestMove,
+    workerBestMove,
     clear,
-    startProcessing,
-  } = useWebWorker<string, ChessEngineParams>(workerInstance);
+    startProcessing: startWebWorker,
+  } = useChessEngineWorker(workerInstance);
 
   function playMove(playedPiece: Piece, destination: Position): boolean {
     // If the playing piece doesn't have any moves return
@@ -173,15 +179,20 @@ export default function Referee() {
     setBoard(initialBoard.clone());
   }
 
-  function calculateBestMoveMainThread() {
-    const chessEngineBoard = parseUIBoardToChessEngine(board);
+  function startMainThread(chessEngineBoard: ChessEngineBoard) {
     setLoading(true)
     setMainThreadBestMove(calculateBestMove(chessEngineBoard));
     setLoading(false)
   }
 
+  function calculateBestMoveMainThread() {
+    const chessEngineBoard = parseUIBoardToChessEngine(board);
+    startMainThread(chessEngineBoard)
+  }
+
   function calculateBestMoveWebWorker() {
-    startProcessing(parseUIBoardToChessEngine(board))
+    const chessEngineBoard = parseUIBoardToChessEngine(board);
+    startWebWorker(chessEngineBoard)
   }
 
   return (

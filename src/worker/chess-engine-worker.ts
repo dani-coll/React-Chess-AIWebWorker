@@ -1,6 +1,7 @@
 import { calculateBestMove } from "../utils/utils";
-import { WorkerResponse } from "./useWebWorker";
 
-self.onmessage = (event) => {
-  return postMessage({ result: calculateBestMove(event.data) } as WorkerResponse<string>);
+const doWork = (event: MessageEvent<ChessEngineBoard>) => {
+  return postMessage(calculateBestMove(event.data));
 };
+
+self.onmessage = doWork;
