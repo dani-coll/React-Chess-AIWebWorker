@@ -48,7 +48,7 @@ export function toString(bestMove: { [key: string]: string }) {
 }
 
 export function calculateBestMove(board: ChessEngineBoard): string {
-  const newMoves = moves(board);
-  const bestMove = aiMove({ ...board, moves: newMoves }, 3)
+  const allMoves = moves(board);
+  const bestMove = aiMove({ ...board, moves: allMoves }, 3)
   return toString(bestMove);
 }

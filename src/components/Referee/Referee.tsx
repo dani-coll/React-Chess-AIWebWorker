@@ -1,5 +1,5 @@
 import { Howl } from "howler";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { initialBoard } from "../../Constants";
 import { Piece, Position } from "../../models";
 import { Board } from "../../models/Board";
@@ -10,7 +10,6 @@ import Chessboard from "../Chessboard/Chessboard";
 import "./Referee.css";
 
 import React from 'react';
-import { useChessEngineWorker } from "../../worker/useChessEngineWorker";
 
 const moveSound = new Howl({
   src: ["/sounds/move-self.mp3"],
@@ -29,22 +28,8 @@ export default function Referee() {
   const [promotionPawn, setPromotionPawn] = useState<Piece>();
   const modalRef = useRef<HTMLDivElement>(null);
   const checkmateModalRef = useRef<HTMLDivElement>(null);
-  const [mainThreadBestMove, setMainThreadBestMove] = useState('')
+  const [bestMove, setMainThreadBestMove] = useState('')
   const [loading, setLoading] = useState(false)
-
-  // Initialize worker
-  const workerInstance = useMemo(
-    () => new Worker(
-      new URL('../../worker/chess-engine-worker', import.meta.url), 
-      { type: 'module'}
-    ), []);
-
-  const {
-    running,
-    workerBestMove,
-    clear,
-    startProcessing: startWebWorker,
-  } = useChessEngineWorker(workerInstance);
 
   function playMove(playedPiece: Piece, destination: Position): boolean {
     // If the playing piece doesn't have any moves return
@@ -97,7 +82,6 @@ export default function Referee() {
     });
 
     setMainThreadBestMove('');
-    clear();
 
     // This is for promoting a pawn
     let promotionRow = playedPiece.team === TeamType.OUR ? 7 : 0;
@@ -190,18 +174,12 @@ export default function Referee() {
     startMainThread(chessEngineBoard)
   }
 
-  function calculateBestMoveWebWorker() {
-    const chessEngineBoard = parseUIBoardToChessEngine(board);
-    startWebWorker(chessEngineBoard)
-  }
-
   return (
     <>
       <div className="best-move-container">
-        <img className={`spinning-icon ${running || loading ? 'loading' : ''}`} src="/dynatrace.png" width="50"></img>
-        <button className="best-move-button main-thread" onClick={calculateBestMoveMainThread}>Calculate (Main thread)</button>
-        <div className="best-move">Best move: <div><b>{workerBestMove || mainThreadBestMove}</b></div></div>
-        <button className="best-move-button web-worker" onClick={calculateBestMoveWebWorker}>Calculate (Web Worker)</button>
+        <img className={`spinning-icon ${loading ? 'loading' : ''}`} src="/dynatrace.png" width="50"></img>
+        <button aria-label="best-move" className="best-move-button main-thread" onClick={calculateBestMoveMainThread}>Calculate (Main thread)</button>
+        <div className="best-move">Best move: <div><b>{bestMove}</b></div></div>
       </div>
       <div className="modal hidden" ref={modalRef}>
         <div className="modal-body">

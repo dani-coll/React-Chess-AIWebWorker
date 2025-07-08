@@ -27,10 +27,6 @@
     &.main-thread {
         background: #AA2200;
     }
-
-    &.web-worker {
-        background: #00AAAA;
-    }
 }
 
 .best-move {
