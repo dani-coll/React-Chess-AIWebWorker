@@ -33,18 +33,28 @@ export default function Referee() {
   const [loading, setLoading] = useState(false)
 
   // Initialize worker
-  const workerInstance = useMemo(
+  const worker1 = useMemo(
     () => new Worker(
       new URL('../../worker/chess-engine-worker', import.meta.url), 
       { type: 'module'}
     ), []);
+  const worker2 = useMemo(
+  () => new Worker(
+    new URL('../../worker/chess-engine-worker', import.meta.url), 
+    { type: 'module'}
+  ), []);
+  const worker3 = useMemo(
+  () => new Worker(
+    new URL('../../worker/chess-engine-worker', import.meta.url), 
+    { type: 'module'}
+  ), []);
 
   const {
     running,
     workerBestMove,
     clear,
     startProcessing: startWebWorker,
-  } = useChessEngineWorker(workerInstance);
+  } = useChessEngineWorker(worker1, worker2, worker3);
 
   function playMove(playedPiece: Piece, destination: Position): boolean {
     // If the playing piece doesn't have any moves return

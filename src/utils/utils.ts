@@ -10,6 +10,10 @@ export type ChessEngineParams = {
     pieces: {};
 }
 
+export function isEmpty(obj: any) {
+    return Object.keys(obj).length === 0;
+}
+
 function getPositionLetter(x: number): string {
   return String.fromCharCode(x + 65);
 }
@@ -47,8 +51,52 @@ export function toString(bestMove: { [key: string]: string }) {
   return `${key} to ${bestMove[key]}`;
 }
 
-export function calculateBestMove(board: ChessEngineBoard): string {
-  const newMoves = moves(board);
-  const bestMove = aiMove({ ...board, moves: newMoves }, 3)
-  return toString(bestMove);
+export function getBestMove(board: ChessEngineBoard, moves: Record<string, unknown>) {
+  return aiMove({ ...board, moves }, 3)
+}
+
+export function calculateBestMove(board: ChessEngineParams, index?: 1 | 2 | 3) {
+  switch(index) {
+    case 1:
+      return calculateBestMoveFirstThread(board)
+    case 2:
+      return calculateBestMoveSecondThread(board)
+    case 3:
+      return calculateBestMoveThirdThread(board)
+    default:
+      return calculateBestMoveAll(board);
+  }
+}
+
+export function calculateBestMoveAll(board: ChessEngineBoard): string {
+  const allMoves = moves(board);
+  return getBestMove(board, allMoves);
+}
+
+export function calculateBestMoveFirstThread(board: ChessEngineBoard): string {
+  const allMoves = moves(board);
+  const myMoves = Object.fromEntries(
+    Object.entries(allMoves).slice(0, Math.floor(Object.entries(allMoves).length / 3))
+  );
+  return getBestMove(board, myMoves);
+}
+
+export function calculateBestMoveSecondThread(board: ChessEngineBoard): string {
+  const allMoves = moves(board);
+  const myMoves = Object.fromEntries(
+    Object.entries(allMoves).slice(Math.floor(Object.entries(allMoves).length / 3), Math.floor(2 * Object.entries(allMoves).length / 3))
+  );
+    console.log(myMoves)
+
+  return getBestMove(board, myMoves);
+}
+
+export function calculateBestMoveThirdThread(board: ChessEngineBoard): string {
+  const allMoves = moves(board);
+  const myMoves = Object.fromEntries(
+    Object.entries(allMoves).slice(Math.floor(2 * Object.entries(allMoves).length / 3))
+  );
+    console.log(myMoves)
+
+  return getBestMove(board, myMoves);
 }
